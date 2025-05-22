@@ -1,5 +1,3 @@
-# Firebase Studio
+# Iphone Details Scraper
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+Scrapes details of iphones from OLX martekplace.
