@@ -52,13 +52,12 @@ export default function RootLayout({
   const auth0ClientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
   const auth0BaseUrlFromEnv = process.env.NEXT_PUBLIC_BASE_URL;
   
-  // This baseUrl is used for the redirect_uri. If NEXT_PUBLIC_BASE_URL is set, it will be used.
-  // Otherwise, it falls back to window.location.origin (client-side only).
-  // The check below ensures NEXT_PUBLIC_BASE_URL is set for the app to proceed.
-  const effectiveBaseUrl = auth0BaseUrlFromEnv || (typeof window !== 'undefined' ? window.location.origin : '');
-
-
   if (!auth0Domain || !auth0ClientId || !auth0BaseUrlFromEnv) {
+    const missingVars = [];
+    if (!auth0Domain) missingVars.push("NEXT_PUBLIC_AUTH0_DOMAIN");
+    if (!auth0ClientId) missingVars.push("NEXT_PUBLIC_AUTH0_CLIENT_ID");
+    if (!auth0BaseUrlFromEnv) missingVars.push("NEXT_PUBLIC_BASE_URL");
+
     return (
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -72,12 +71,20 @@ export default function RootLayout({
               <li><strong>NEXT_PUBLIC_AUTH0_CLIENT_ID</strong>: Your Auth0 application client ID. {!auth0ClientId && <span style={{color: 'red'}}>(Missing)</span>}</li>
               <li><strong>NEXT_PUBLIC_BASE_URL</strong>: The base URL of your application (e.g., http://localhost:9002 for local development). {!auth0BaseUrlFromEnv && <span style={{color: 'red'}}>(Missing)</span>}</li>
             </ul>
+             {missingVars.length > 0 && (
+              <p style={{ color: 'orange', marginTop: '10px' }}>
+                Detected missing variable(s): {missingVars.join(', ')}
+              </p>
+            )}
             <p>After adding these to <code>.env.local</code>, please restart your development server.</p>
           </div>
         </body>
       </html>
     );
   }
+
+  // If we've reached this point, auth0Domain, auth0ClientId, and auth0BaseUrlFromEnv are all set.
+  // We will use auth0BaseUrlFromEnv directly for the redirect_uri.
 
   return (
     <html lang="en">
@@ -90,7 +97,7 @@ export default function RootLayout({
           domain={auth0Domain}
           clientId={auth0ClientId}
           authorizationParams={{
-            redirect_uri: effectiveBaseUrl, // This will be process.env.NEXT_PUBLIC_BASE_URL due to the check above
+            redirect_uri: auth0BaseUrlFromEnv, // Use the validated environment variable directly
           }}
           cacheLocation="localstorage" // Recommended for SPAs
         >
