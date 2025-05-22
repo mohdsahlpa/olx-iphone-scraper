@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -6,12 +7,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function HomePage() {
-  const { user, loading, isWhitelisted } = useAuth();
+  const { isAuthenticated, isLoading, isWhitelisted } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
+    if (!isLoading) {
+      if (isAuthenticated) {
         if (isWhitelisted) {
           router.replace('/dashboard');
         } else {
@@ -21,7 +22,7 @@ export default function HomePage() {
         router.replace('/login');
       }
     }
-  }, [user, loading, isWhitelisted, router]);
+  }, [isAuthenticated, isLoading, isWhitelisted, router]);
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-background">

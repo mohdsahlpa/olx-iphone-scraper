@@ -1,22 +1,19 @@
+
 "use client";
 
-import { useContext } from 'react';
-import type { User } from 'firebase/auth';
+import React, { useContext } from 'react';
+import type { User as Auth0User } from '@auth0/auth0-react';
 
-// Define the AuthContext state structure
+// Define the AuthContext state structure for Auth0
 export interface AuthContextType {
-  user: User | null;
-  loading: boolean;
+  user: Auth0User | undefined; // Auth0 user object (can be undefined)
+  isAuthenticated: boolean;   // Provided by Auth0
+  isLoading: boolean;         // Auth0's loading state
   isWhitelisted: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signOut: () => Promise<void>;
+  loginWithRedirect: () => Promise<void>; // Auth0's login method
+  logout: (options?: { logoutParams?: { returnTo?: string } }) => Promise<void>; // Auth0's logout method
 }
 
-// Create the context with a default undefined value initially.
-// AuthProvider will supply the actual value.
-// This avoids errors if consumed outside the provider during initial setup,
-// though proper usage means always consuming within a provider.
-// The ! assertion is safe here as the context will be provided.
 export const AuthContext = React.createContext<AuthContextType>(undefined!);
 
 export const useAuth = (): AuthContextType => {

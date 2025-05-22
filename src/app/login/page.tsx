@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect } from 'react';
@@ -7,20 +8,20 @@ import { useAuth } from '@/hooks/use-auth';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function LoginPage() {
-  const { user, loading, isWhitelisted } = useAuth();
+  const { isAuthenticated, isLoading, isWhitelisted } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!isLoading && isAuthenticated) {
       if (isWhitelisted) {
         router.replace('/dashboard');
       } else {
         router.replace('/access-denied');
       }
     }
-  }, [user, loading, isWhitelisted, router]);
+  }, [isAuthenticated, isLoading, isWhitelisted, router]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <Spinner className="h-12 w-12 text-primary" />
@@ -28,8 +29,8 @@ export default function LoginPage() {
     );
   }
   
-  // Only show login button if not loading and no user (or redirecting)
-  if (!user) {
+  // Only show login button if not loading and not authenticated
+  if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4 text-center">
         <div className="mb-12">
@@ -41,7 +42,7 @@ export default function LoginPage() {
     );
   }
 
-  // Fallback for when user is present but redirection hasn't completed (or if logic fails)
+  // Fallback for when authenticated but redirection hasn't completed
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
        <Spinner className="h-12 w-12 text-primary" />

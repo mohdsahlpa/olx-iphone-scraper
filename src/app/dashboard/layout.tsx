@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, type ReactNode } from 'react';
@@ -7,20 +8,20 @@ import { Header } from '@/components/layout/header';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { user, loading, isWhitelisted } = useAuth();
+  const { isAuthenticated, isLoading, isWhitelisted } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
+    if (!isLoading) {
+      if (!isAuthenticated) {
         router.replace('/login');
       } else if (!isWhitelisted) {
         router.replace('/access-denied');
       }
     }
-  }, [user, loading, isWhitelisted, router]);
+  }, [isAuthenticated, isLoading, isWhitelisted, router]);
 
-  if (loading || !user || !isWhitelisted) {
+  if (isLoading || !isAuthenticated || !isWhitelisted) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Spinner className="h-12 w-12 text-primary" />

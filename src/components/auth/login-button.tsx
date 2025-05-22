@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LogIn } from 'lucide-react';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { Spinner } from '@/components/ui/spinner';
 
-// Simple SVG Google Icon
+// Simple SVG Google Icon (can be kept if Google is a connection in Auth0)
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="20" height="20" {...props}>
     <path
@@ -30,21 +31,22 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 
 export function LoginButton() {
-  const { signInWithGoogle, loading } = useAuth();
+  const { loginWithRedirect, isLoading } = useAuth();
 
   return (
     <Button
-      onClick={signInWithGoogle}
-      disabled={loading}
+      onClick={() => loginWithRedirect()}
+      disabled={isLoading}
       className="w-full max-w-xs text-base py-6 shadow-md hover:shadow-lg transition-shadow duration-300"
       variant="outline"
     >
-      {loading ? (
+      {isLoading ? (
         <Spinner className="mr-2 h-5 w-5" />
       ) : (
-        <GoogleIcon className="mr-3" />
+        // You might want a more generic icon or one specific to Auth0 / your configured connections
+        <GoogleIcon className="mr-3" /> 
       )}
-      Sign in with Google
+      Sign in 
     </Button>
   );
 }

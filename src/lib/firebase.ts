@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+// Auth related imports like getAuth, GoogleAuthProvider are removed as Auth0 is now used.
 
 const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN;
@@ -9,26 +9,28 @@ const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 const messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
 const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID;
 
-// Check if the API key, which is critical, is provided
-if (!apiKey) {
+// The API key check can remain if other Firebase services are to be used.
+// If Firebase is *only* for auth (which is now removed), this whole file might be refactored
+// or removed if no other Firebase services are planned. For now, we keep the core app initialization.
+if (!apiKey && (authDomain || projectId || storageBucket || messagingSenderId || appId)) {
+  // This warning is now more general if other Firebase services might be used.
+  // If only auth was used, this specific warning about API key for auth might be less relevant,
+  // but it's good practice to have keys for any Firebase service.
   const errorMessage =
-    "Firebase API Key (NEXT_PUBLIC_FIREBASE_API_KEY) is missing or empty. " +
-    "This is critical for Firebase initialization and is the likely cause of 'auth/invalid-api-key' errors. " +
-    "Please create a .env.local file in the project root with your Firebase configuration.\n\n" +
-    "Example .env.local content:\n" +
+    "One or more Firebase environment variables (excluding API key) are set, but NEXT_PUBLIC_FIREBASE_API_KEY is missing. " +
+    "If you plan to use Firebase services, ensure all necessary configurations are present in .env.local.\n\n" +
+    "Example .env.local content for Firebase (if still needed for other services):\n" +
     "NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyYOUR_API_KEY_HERE\n" +
     "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com\n" +
     "NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id\n" +
     "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com\n" +
     "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id\n" +
-    "NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id\n\n" +
-    "Ensure these values are correct and obtained from your Firebase project settings.";
+    "NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id\n";
   
-  console.error(errorMessage);
-  throw new Error(
-    "Firebase API Key (NEXT_PUBLIC_FIREBASE_API_KEY) is not configured. This will cause Firebase initialization to fail. Check the console for more details and an example .env.local structure."
-  );
+  console.warn(errorMessage);
+  // Not throwing an error anymore, to allow the app to run if Firebase isn't critical path without auth
 }
+
 
 const firebaseConfig = {
   apiKey: apiKey,
@@ -39,14 +41,20 @@ const firebaseConfig = {
   appId: appId,
 };
 
-let app: FirebaseApp;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
+let app: FirebaseApp | null = null;
+
+// Initialize Firebase only if at least an API key or Project ID is provided,
+// to prevent errors if no Firebase services are configured/used.
+if (apiKey || projectId) {
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+  }
 } else {
-  app = getApp();
+  console.warn("Firebase SDK not initialized because essential configuration (API Key or Project ID) is missing. If you intend to use Firebase services, please provide the necessary environment variables.");
 }
 
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
 
-export { app, auth, googleProvider };
+// auth and googleProvider are removed as Auth0 is handling authentication.
+export { app };
