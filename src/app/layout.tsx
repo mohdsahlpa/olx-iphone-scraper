@@ -50,17 +50,29 @@ export default function RootLayout({
   
   const auth0Domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
   const auth0ClientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+  const auth0BaseUrlFromEnv = process.env.NEXT_PUBLIC_BASE_URL;
+  
+  // This baseUrl is used for the redirect_uri. If NEXT_PUBLIC_BASE_URL is set, it will be used.
+  // Otherwise, it falls back to window.location.origin (client-side only).
+  // The check below ensures NEXT_PUBLIC_BASE_URL is set for the app to proceed.
+  const effectiveBaseUrl = auth0BaseUrlFromEnv || (typeof window !== 'undefined' ? window.location.origin : '');
 
 
-  if (!auth0Domain || !auth0ClientId) {
+  if (!auth0Domain || !auth0ClientId || !auth0BaseUrlFromEnv) {
     return (
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+          <div style={{ padding: '20px', textAlign: 'center', color: 'red', backgroundColor: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
             <h1>Auth0 Configuration Error</h1>
-            <p>Please set NEXT_PUBLIC_AUTH0_DOMAIN and NEXT_PUBLIC_AUTH0_CLIENT_ID in your .env.local file.</p>
-            <p>Also ensure NEXT_PUBLIC_BASE_URL is set (e.g., http://localhost:9002 for local dev).</p>
+            <p style={{maxWidth: '600px', lineHeight: '1.6'}}>
+              The application requires Auth0 to be configured. Please ensure the following environment variables are set in your <code>.env.local</code> file:
+            </p>
+            <ul style={{listStyle: 'none', padding: '0', textAlign: 'left', backgroundColor: '#f8f8f8', border: '1px solid #ddd', borderRadius: '4px', padding: '15px', margin: '10px 0' }}>
+              <li><strong>NEXT_PUBLIC_AUTH0_DOMAIN</strong>: Your Auth0 application domain. {!auth0Domain && <span style={{color: 'red'}}>(Missing)</span>}</li>
+              <li><strong>NEXT_PUBLIC_AUTH0_CLIENT_ID</strong>: Your Auth0 application client ID. {!auth0ClientId && <span style={{color: 'red'}}>(Missing)</span>}</li>
+              <li><strong>NEXT_PUBLIC_BASE_URL</strong>: The base URL of your application (e.g., http://localhost:9002 for local development). {!auth0BaseUrlFromEnv && <span style={{color: 'red'}}>(Missing)</span>}</li>
+            </ul>
+            <p>After adding these to <code>.env.local</code>, please restart your development server.</p>
           </div>
         </body>
       </html>
@@ -78,7 +90,7 @@ export default function RootLayout({
           domain={auth0Domain}
           clientId={auth0ClientId}
           authorizationParams={{
-            redirect_uri: baseUrl,
+            redirect_uri: effectiveBaseUrl, // This will be process.env.NEXT_PUBLIC_BASE_URL due to the check above
           }}
           cacheLocation="localstorage" // Recommended for SPAs
         >
